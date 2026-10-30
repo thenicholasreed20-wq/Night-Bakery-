@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Night Bakery</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--glow:#ffdca3;--bg:#eef1f4;--fg:#14213d;--card:#fff;--line:#d3d9e2;--mute:#586377;--accent:#b4630f;--crust:#e3963b;--crust2:#b86a1c;--score:#7a420d;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--glow:#2b4585;--bg:#0f1a30;--fg:#eef1f6;--card:#17264a;--line:#2a3b66;--mute:#9aa8c4;--accent:#f2a541;--crust:#e3963b;--crust2:#b86a1c;--score:#7a420d}}
+:root[data-theme="dark"]{--glow:#2b4585;--bg:#0f1a30;--fg:#eef1f6;--card:#17264a;--line:#2a3b66;--mute:#9aa8c4;--accent:#f2a541;--crust:#e3963b;--crust2:#b86a1c;--score:#7a420d}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:radial-gradient(ellipse 130% 70% at 50% -10%,var(--glow),transparent 70%) fixed,var(--bg);color:var(--fg);font-family:"DM Sans",system-ui,sans-serif;line-height:1.4;min-height:100vh}
+main{max-width:860px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:20px}
+@media(min-width:760px){main{grid-template-columns:1fr 1fr;align-items:start;padding-top:40px}}
+h1{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;font-size:clamp(2.6rem,9vw,4rem);margin:0;line-height:1;letter-spacing:-.02em}
+.sub{color:var(--mute);margin:6px 0 0}
+.bake{text-align:center;position:relative}
+#loaf{all:unset;cursor:pointer;display:block;margin:18px auto 8px;width:min(70vw,280px);-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform .08s}
+#loaf:active{transform:scale(.94)}
+#loaf:focus-visible{outline:3px solid var(--accent);outline-offset:6px;border-radius:50%}
+#loaf svg{width:100%;height:auto;display:block}
+.rate{color:var(--mute);margin:0}
+.rate b{color:var(--accent)}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.up{all:unset;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;touch-action:manipulation}
+.up:focus-visible{outline:3px solid var(--accent)}
+.up[disabled]{opacity:.5;cursor:not-allowed}
+.up:not([disabled]):active{transform:scale(.98)}
+.up strong{font-family:"Bricolage Grotesque",Georgia,serif;font-size:1.05rem}
+.up small{display:block;color:var(--mute)}
+.cost{font-weight:600;color:var(--accent);white-space:nowrap;text-align:right}
+.cost small{font-weight:400}
+h2{font-family:"Bricolage Grotesque",Georgia,serif;font-size:1.2rem;margin:0 0 10px}
+#reset{all:unset;cursor:pointer;color:var(--mute);font-size:.85rem;text-decoration:underline;margin-top:14px;display:inline-block}
+#fx{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+#fx span{position:absolute;font-weight:800;font-family:"Bricolage Grotesque",Georgia,serif;color:var(--accent);animation:up .8s ease-out forwards}
+@keyframes up{to{transform:translateY(-70px);opacity:0}}
+@media(prefers-reduced-motion:reduce){#fx span{animation-duration:.01s}#loaf{transition:none}}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+#skins{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.sk{all:unset;cursor:pointer;box-sizing:border-box;display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px;touch-action:manipulation}
+.sk svg{width:44px;flex:none}
+.sk strong{display:block;font-size:.9rem;line-height:1.2}
+.sk small{color:var(--mute);font-size:.75rem}
+.sk[disabled]{cursor:not-allowed}
+.sk[disabled] svg{filter:grayscale(1) brightness(.6)}
+.sk.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.sk:focus-visible{outline:3px solid var(--accent)}
+h2.gap{margin-top:22px}
+.up:not([disabled]){border-color:var(--accent)}
+#combo{max-width:280px;margin:0 auto 10px}
+#ctext{font-weight:600;color:var(--mute)}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;width:0;background:var(--accent)}
+#buff{min-height:1.3em;font-size:.85rem;color:var(--accent);font-weight:600}
+#toast{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;justify-items:center;pointer-events:none;z-index:9}
+.t{background:var(--card);color:var(--fg);border:1px solid var(--accent);border-radius:12px;padding:10px 14px;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:90vw;animation:tin .25s ease-out}
+@keyframes tin{from{transform:translateY(12px);opacity:0}}
+.gd{position:fixed;z-index:5;width:64px;height:64px;border-radius:50%;border:0;cursor:pointer;font-size:28px;color:#7a420d;background:radial-gradient(circle at 35% 30%,#fff3b0,#f2b42a 55%,#c27a08);box-shadow:0 0 24px 6px rgba(242,180,42,.7);animation:gp .9s ease-in-out infinite alternate}
+@keyframes gp{to{transform:scale(1.15)}}
+#fx .cr{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent);animation:cr .6s ease-out forwards}
+@keyframes cr{to{transform:translate(var(--dx),var(--dy));opacity:0}}
+#trophies{display:flex;flex-wrap:wrap;gap:8px}
+.tr{font-size:.8rem;border:1px dashed var(--line);border-radius:999px;padding:4px 10px;color:var(--mute)}
+.tr.on{border:1px solid var(--accent);color:var(--fg)}
+h2 small{font-weight:400;color:var(--mute);font-size:.8rem}
+#mute{all:unset;cursor:pointer;color:var(--mute);font-size:.85rem;text-decoration:underline;margin-right:14px}
+@media(prefers-reduced-motion:reduce){.gd{animation:none}#fx .cr{display:none}.t{animation:none}}
+#loaf{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.fd{position:fixed;left:0;z-index:5;width:72px;height:60px;padding:0;border:0;background:none;cursor:pointer;filter:drop-shadow(0 0 10px #ec6fa8);animation:fly 6s linear forwards}
+.fd svg{width:100%;display:block;animation:spin 1.2s linear infinite}
+@keyframes fly{from{transform:translateX(-90px)}to{transform:translateX(calc(100vw + 90px))}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.fd{animation:none;left:45vw}.fd svg{animation:none}}
+.brand{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;font-size:1.1rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+html{scroll-behavior:smooth}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+main,.site{scroll-margin-top:70px}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:8;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav nav{display:flex;gap:16px}
+.nav a{color:var(--fg);text-decoration:none;font-weight:600;font-size:.9rem}
+.nav .logo{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;font-size:1.05rem;color:var(--accent)}
+.hero{max-width:860px;margin:0 auto;padding:48px 16px 8px;text-align:center}
+.eyebrow{color:var(--accent);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:.8rem;margin:0}
+.ttl{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;font-size:clamp(3rem,13vw,6rem);line-height:.95;letter-spacing:-.03em;margin:10px 0 14px}
+.lede{max-width:520px;margin:0 auto 22px;color:var(--mute);font-size:1.1rem}
+.cta{display:inline-block;background:var(--accent);color:var(--bg);font-weight:800;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:"Bricolage Grotesque",Georgia,serif;font-size:1.1rem}
+.cta:focus-visible{outline:3px solid var(--fg);outline-offset:3px}
+.site{max-width:860px;margin:0 auto;padding:30px 16px}
+.site h2{font-size:1.6rem;margin:0 0 14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card b{font-family:"Bricolage Grotesque",Georgia,serif;font-size:1.05rem;display:block;margin-bottom:4px}
+.card p{margin:0;color:var(--mute);font-size:.95rem}
+footer{text-align:center;color:var(--mute);padding:30px 16px calc(40px + env(safe-area-inset-bottom,0px));font-size:.9rem}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="nav"><a class="logo" href="#top">🍞 Night Bakery</a><nav><a href="#play">Play</a><a href="#how">How to play</a><a href="#features">Features</a></nav></header>
+<section class="hero" id="top">
+  <p class="eyebrow">A tiny idle game</p>
+  <p class="ttl">Night Bakery</p>
+  <p class="lede">Tap the loaf, build a combo, catch golden dough and flying doughnuts, and grow a bakery that never sleeps.</p>
+  <a class="cta" href="#play">Start baking</a>
+</section>
+<main id="play">
+  <section class="bake">
+    <h1 id="count">0</h1>
+    <p class="sub">loaves baked</p>
+    <button id="loaf" aria-label="Bake a loaf">
+      <svg id="art" viewBox="0 0 200 150" aria-hidden="true">
+        <ellipse cx="100" cy="135" rx="80" ry="8" fill="#000" opacity=".15"/>
+        <path d="M18 88c0-38 38-62 82-62s82 24 82 62c0 26-30 44-82 44S18 114 18 88z" fill="var(--crust2)"/>
+        <path d="M24 84c0-34 34-54 76-54s76 20 76 54c0 22-28 38-76 38S24 106 24 84z" fill="var(--crust)"/>
+        <g stroke="var(--score)" stroke-width="6" stroke-linecap="round" fill="none" opacity=".8">
+          <path d="M62 56l-12 38"/><path d="M96 48l-8 46"/><path d="M130 56l-4 38"/>
+        </g>
+      </svg>
+    </button>
+    <p class="rate"><b id="pc">1</b> per click · <b id="cps">0</b> per second</p>
+    <button id="reset">Start over</button>
+  </section>
+  <section>
+    <h2>Bakery upgrades</h2>
+    <ul id="ups"></ul>
+    <h2 class="gap">Skins</h2>
+    <div id="skins"></div>
+  </section>
+</main>
+<section class="site" id="how">
+  <h2>How to play</h2>
+  <div class="cards">
+    <div class="card"><b>Tap the loaf</b><p>Every tap bakes loaves. Tap fast to fill the combo meter and multiply each tap up to x3.</p></div>
+    <div class="card"><b>Hold for a bonus</b><p>Once the combo meter is 40% full, press and hold the loaf to auto-bake at triple value, then get a burst bonus when you let go.</p></div>
+    <div class="card"><b>Catch the specials</b><p>Tap golden dough for a frenzy or lucky batch. Tap a flying doughnut to triple everything for 15 seconds.</p></div>
+    <div class="card"><b>Grow your bakery</b><p>Spend loaves on upgrades that bake for you, then feed the starter to restart with a permanent boost.</p></div>
+  </div>
+</section>
+<section class="site" id="features">
+  <h2>What’s inside</h2>
+  <div class="cards">
+    <div class="card"><b>Five skins</b><p>Unlock a croissant, pretzel, donut and golden loaf as your total grows.</p></div>
+    <div class="card"><b>14 trophies</b><p>Each one adds 1% to everything you bake.</p></div>
+    <div class="card"><b>Sourdough prestige</b><p>Restart for starters that boost production by 10% each.</p></div>
+    <div class="card"><b>Saves itself</b><p>Your progress stays in your browser, and the bakery keeps earning while you’re away.</p></div>
+  </div>
+</section>
+<footer>Night Bakery. Made with Claude.</footer>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div id="fx"></div>
+<script>
+var U=[
+ {id:"flour",n:"Better flour",d:"+1 loaf per click",b:25,click:1},
+ {id:"app",n:"Apprentice",d:"Bakes 1 loaf per second",b:60,cps:1},
+ {id:"oven",n:"Stone oven",d:"Bakes 8 loaves per second",b:500,cps:8},
+ {id:"shop",n:"Corner shop",d:"Sells 50 loaves per second",b:4000,cps:50},
+ {id:"mill",n:"Windmill",d:"Grinds 300 loaves per second",b:30000,cps:300}
+];
+var KEY="night-bakery-v1",S={loaves:0,owned:{}};
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&typeof p.loaves==="number")S=p;if(!S.owned)S.owned={}}}catch(e){}
+function save(){S.t=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function n(id){return S.owned[id]||0}
+function cost(u){return Math.ceil(u.b*Math.pow(1.15,n(u.id)))}
+function pc(){return (1+n("flour"))*mult()*combo()}
+function cps(){return U.reduce(function(a,u){return a+(u.cps||0)*n(u.id)},0)*mult()}
+function fmt(x){
+  if(x<1e3)return Math.floor(x).toString();
+  var s=["K","M","B","T"],i=-1;
+  while(x>=1000&&i<s.length-1){x/=1000;i++}
+  return x.toFixed(x<10?2:1)+s[i];
+}
+var list=document.getElementById("ups"),btns={};
+U.forEach(function(u){
+  var li=document.createElement("li"),b=document.createElement("button");
+  b.className="up";
+  b.innerHTML='<span><strong>'+u.n+'</strong><small>'+u.d+'</small></span><span class="cost"></span>';
+  b.onclick=function(){var c=cost(u);if(S.loaves>=c){S.loaves-=c;S.owned[u.id]=n(u.id)+1;render();save()}};
+  li.appendChild(b);list.appendChild(li);btns[u.id]=b;
+});
+function render(){
+  document.getElementById("count").textContent=fmt(S.loaves);
+  document.getElementById("pc").textContent=fmt(pc());
+  document.getElementById("cps").textContent=fmt(cps());
+  skinState();
+  U.forEach(function(u){
+    var b=btns[u.id],c=cost(u);
+    b.disabled=S.loaves<c;
+    b.querySelector(".cost").innerHTML=fmt(c)+' loaves<small><br>owned '+n(u.id)+'</small>';
+  });
+}
+var fx=document.getElementById("fx");
+function pop(x,y,t){
+  var s=document.createElement("span");
+  s.textContent="+"+t;s.style.left=(x-10)+"px";s.style.top=(y-20)+"px";
+  fx.appendChild(s);setTimeout(function(){s.remove()},800);
+}
+document.getElementById("loaf").addEventListener("click",function(e){
+  var r=this.getBoundingClientRect();
+  var x=e.clientX||r.left+r.width/2,y=e.clientY||r.top+r.height/2;
+  S.loaves+=pc();S.total=(S.total||0)+pc();pop(x,y,fmt(pc()));render();
+});
+document.getElementById("reset").onclick=function(){
+  if(confirm("Start over? This clears your loaves and upgrades.")){S={loaves:0,owned:{},total:0,skin:"classic"};setSkin("classic");render();save()}
+};
+function loaf(a,b,s){return '<ellipse cx="100" cy="135" rx="80" ry="8" fill="#000" opacity=".15"/><path d="M18 88c0-38 38-62 82-62s82 24 82 62c0 26-30 44-82 44S18 114 18 88z" fill="'+b+'"/><path d="M24 84c0-34 34-54 76-54s76 20 76 54c0 22-28 38-76 38S24 106 24 84z" fill="'+a+'"/><g stroke="'+s+'" stroke-width="6" stroke-linecap="round" fill="none" opacity=".8"><path d="M62 56l-12 38"/><path d="M96 48l-8 46"/><path d="M130 56l-4 38"/></g>'}
+var SH='<ellipse cx="100" cy="135" rx="80" ry="8" fill="#000" opacity=".15"/>';
+var SK=[
+ {id:"classic",n:"Classic loaf",at:0,svg:loaf("#e3963b","#b86a1c","#7a420d")},
+ {id:"croissant",n:"Croissant",at:500,svg:SH+'<g fill="#eab04e" stroke="#b86a1c" stroke-width="4"><ellipse cx="36" cy="104" rx="15" ry="26" transform="rotate(-50 36 104)"/><ellipse cx="164" cy="104" rx="15" ry="26" transform="rotate(50 164 104)"/><ellipse cx="62" cy="78" rx="20" ry="30" transform="rotate(-30 62 78)"/><ellipse cx="138" cy="78" rx="20" ry="30" transform="rotate(30 138 78)"/><ellipse cx="100" cy="68" rx="25" ry="36"/></g>'},
+ {id:"pretzel",n:"Pretzel",at:5000,svg:SH+'<path d="M60 112c-30-10-30-62 5-66 25-3 35 26 35 26s10-29 35-26c35 4 35 56 5 66-20 6-35-14-40-30-5 16-20 36-40 30z" fill="none" stroke="#a5611f" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><g fill="#fff" opacity=".9"><circle cx="58" cy="62" r="2.5"/><circle cx="142" cy="62" r="2.5"/><circle cx="80" cy="100" r="2.5"/><circle cx="120" cy="100" r="2.5"/><circle cx="100" cy="74" r="2.5"/></g>'},
+ {id:"donut",n:"Donut",at:50000,svg:SH+'<path fill-rule="evenodd" d="M100 26c40 0 72 22 72 52s-32 52-72 52-72-22-72-52 32-52 72-52zm0 36c-14 0-26 6-26 16s12 16 26 16 26-6 26-16-12-16-26-16z" fill="#d99a5e"/><path fill-rule="evenodd" d="M100 32c36 0 66 19 66 46s-30 46-66 46-66-19-66-46 30-46 66-46zm0 30c-13 0-24 6-24 16s11 16 24 16 24-6 24-16-11-16-24-16z" fill="#ec6fa8"/><g stroke-width="5" stroke-linecap="round"><path d="M54 56l8-4" stroke="#fff"/><path d="M138 52l8 5" stroke="#7ad3c4"/><path d="M62 100l8 4" stroke="#ffe27a"/><path d="M130 102l8-3" stroke="#fff"/><path d="M100 42l8 1" stroke="#7ad3c4"/></g>'},
+ {id:"golden",n:"Golden loaf",at:500000,svg:loaf("#ffd75e","#d99a1c","#9a6208")+'<path d="M170 22l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="#fff"/><path d="M30 40l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fff"/>'}
+];
+var skB={},skWrap=document.getElementById("skins");
+SK.forEach(function(k){
+ var b=document.createElement("button");b.className="sk";
+ b.innerHTML='<svg viewBox="0 0 200 150" aria-hidden="true">'+k.svg+'</svg><span><strong>'+k.n+'</strong><small></small></span>';
+ b.onclick=function(){setSkin(k.id);save()};
+ skWrap.appendChild(b);skB[k.id]=b;
+});
+function setSkin(id){
+ var k=SK.filter(function(x){return x.id===id})[0]||SK[0];
+ S.skin=k.id;document.getElementById("art").innerHTML=k.svg;skinState();
+}
+function skinState(){
+ var t=S.total||0;
+ SK.forEach(function(k){
+  var b=skB[k.id],ok=t>=k.at;
+  b.disabled=!ok;b.setAttribute("aria-pressed",S.skin===k.id);b.classList.toggle("on",S.skin===k.id);
+  b.querySelector("small").textContent=ok?(S.skin===k.id?"In use":"Unlocked"):"Bake "+fmt(k.at)+" loaves";
+ });
+}
+setSkin(S.skin||"classic");
+
+var cv=document.getElementById("bg"),cx=cv.getContext("2d"),W=0,H=0,P=[],ac="#f2a541",lt=0;
+var still=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
+function size(){var d=window.devicePixelRatio||1;W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0)}
+function mk(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*2.2+.6,v:Math.random()*14+6,p:Math.random()*6.28,a:Math.random()*.45+.15}}
+function colour(){ac=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||ac}
+function draw(t){
+ var dt=Math.min((t-lt)/1000,.1);lt=t;
+ var sp=1+Math.min(cps()/40,4);
+ cx.clearRect(0,0,W,H);cx.fillStyle=ac;
+ P.forEach(function(q){
+  if(!still){q.y-=q.v*sp*dt;q.p+=dt;q.x+=Math.sin(q.p)*10*dt}
+  if(q.y<-5){q.y=H+5;q.x=Math.random()*W}
+  cx.globalAlpha=q.a*(.6+.4*Math.sin(q.p*2));
+  cx.beginPath();cx.arc(q.x,q.y,q.r,0,6.283);cx.fill();
+ });
+ cx.globalAlpha=1;
+ if(!still)requestAnimationFrame(draw);
+}
+size();colour();for(var i=0;i<80;i++)P.push(mk());
+addEventListener("resize",function(){size();if(still)draw(0)});
+setInterval(colour,2000);
+requestAnimationFrame(draw);
+
+var frenzyEnd=0,heat=0,muted=false,AC=null,tk=0;
+try{muted=localStorage.getItem('nb-mute')==='1'}catch(e){}
+function beep(f,d,v){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();var o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=f;g.gain.value=v||.05;g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+function combo(){return 1+Math.floor(heat/25)*.5}
+function bonus(){var a=0;for(var k in (S.ach||{}))a++;return 1+.1*(S.starters||0)+.01*a}
+function mult(){return bonus()*(Date.now()<frenzyEnd?7:1)*(Date.now()<rushEnd?3:1)}
+var tw=document.createElement('div');tw.id='toast';tw.setAttribute('aria-live','polite');document.body.appendChild(tw);
+function toast(m){var t=document.createElement('div');t.className='t';t.textContent=m;tw.appendChild(t);setTimeout(function(){t.remove()},4000)}
+
+var cb=document.createElement('div');cb.id='combo';
+cb.innerHTML='<div id="ctext">Tap fast to build a combo</div><div class="bar"><i id="cbar"></i></div><div id="buff"></div>';
+document.querySelector('.bake').insertBefore(cb,document.querySelector('.rate'));
+
+document.getElementById('loaf').addEventListener('click',function(e){
+ heat=Math.min(100,heat+6);beep(280+heat*4,.07,.04);
+ var r=this.getBoundingClientRect(),x=e.clientX||r.left+r.width/2,y=e.clientY||r.top+r.height/2;
+ for(var i=0;i<4;i++){var c=document.createElement('i');c.className='cr';c.style.left=x+'px';c.style.top=y+'px';c.style.setProperty('--dx',(Math.random()*90-45)+'px');c.style.setProperty('--dy',(-20-Math.random()*60)+'px');fx.appendChild(c);(function(el){setTimeout(function(){el.remove()},600)})(c)}
+});
+
+function nextGD(first){setTimeout(spawnGD,(first?25:50+Math.random()*70)*1000)}
+function spawnGD(){
+ if(document.hidden){nextGD();return}
+ var b=document.createElement('button');b.className='gd';b.textContent='✦';b.setAttribute('aria-label','Golden dough');
+ b.style.left=(8+Math.random()*76)+'vw';b.style.top=(15+Math.random()*60)+'vh';
+ var gone=setTimeout(function(){b.remove();nextGD()},10000);
+ b.onclick=function(){clearTimeout(gone);b.remove();goldEffect();nextGD()};
+ document.body.appendChild(b);
+}
+function goldEffect(){
+ S.gd=(S.gd||0)+1;
+ if(Math.random()<.5){frenzyEnd=Math.max(frenzyEnd,Date.now())+20000;toast('Golden frenzy! Everything x7 for 20 seconds.')}
+ else{var g=Math.max(S.loaves*.15,cps()*90)+100;S.loaves+=g;S.total=(S.total||0)+g;toast('Lucky batch! +'+fmt(g)+' loaves.')}
+ [523,659,784,1047].forEach(function(f,i){setTimeout(function(){beep(f,.15,.05)},i*80)});
+ render();
+}
+nextGD(true);
+
+var AH=[
+ {id:'a1',n:'First loaf',f:function(){return (S.total||0)>=1}},
+ {id:'a2',n:'Baker’s dozen',f:function(){return (S.total||0)>=13}},
+ {id:'a3',n:'Hundred loaves',f:function(){return (S.total||0)>=100}},
+ {id:'a4',n:'Thousand loaves',f:function(){return (S.total||0)>=1e3}},
+ {id:'a5',n:'Ten thousand',f:function(){return (S.total||0)>=1e4}},
+ {id:'a6',n:'Bakery empire',f:function(){return (S.total||0)>=1e6}},
+ {id:'a7',n:'Billionaire baker',f:function(){return (S.total||0)>=1e9}},
+ {id:'a8',n:'Hired help',f:function(){return n('app')>0}},
+ {id:'a9',n:'Full crew',f:function(){return ['app','oven','shop','mill'].every(function(i){return n(i)>0})}},
+ {id:'a10',n:'Oven row',f:function(){return n('oven')>=10}},
+ {id:'a11',n:'On fire',f:function(){return !!S.hot}},
+ {id:'a12',n:'Golden touch',f:function(){return (S.gd||0)>=1}},
+ {id:'a13',n:'Starter kit',f:function(){return (S.starters||0)>=1}},
+ {id:'a14',n:'Skin collector',f:function(){return (S.total||0)>=500000}}
+];
+var trB={},trW=document.createElement('div');trW.id='trophies';
+var th=document.createElement('h2');th.className='gap';th.innerHTML='Trophies <small id="tc"></small>';
+skWrap.parentNode.appendChild(th);skWrap.parentNode.appendChild(trW);
+AH.forEach(function(a){var s=document.createElement('span');trB[a.id]=s;trW.appendChild(s)});
+
+var pb=document.createElement('button');pb.className='up';pb.style.marginTop='14px';pb.style.textAlign='left';
+pb.innerHTML='<span><strong>Feed the starter</strong><small></small></span>';
+pb.onclick=function(){
+ var run=(S.total||0)-(S.base||0),gn=Math.floor(Math.sqrt(run/1e6));if(gn<1)return;
+ if(confirm('Restart your bakery for '+gn+' sourdough starter'+(gn>1?'s':'')+'? Skins and trophies stay.')){
+  S.starters=(S.starters||0)+gn;S.base=S.total;S.loaves=0;S.owned={};render();slow();save();
+  toast('The starter is bubbling. Everything bakes '+Math.round((bonus()-1)*100)+'% faster.');
+ }
+};
+var rs=document.getElementById('reset');
+rs.parentNode.insertBefore(pb,rs);
+var mb=document.createElement('button');mb.id='mute';mb.textContent=muted?'Sound off':'Sound on';
+mb.onclick=function(){muted=!muted;mb.textContent=muted?'Sound off':'Sound on';try{localStorage.setItem('nb-mute',muted?'1':'0')}catch(e){}};
+rs.parentNode.insertBefore(mb,rs);
+
+function slow(){
+ document.title=fmt(S.loaves)+' loaves – Night Bakery';
+ S.ach=S.ach||{};var cnt=0;
+ AH.forEach(function(a){
+  if(!S.ach[a.id]&&a.f()){S.ach[a.id]=1;toast('Trophy: '+a.n+' (+1% to everything)');beep(660,.12,.05);setTimeout(function(){beep(880,.18,.05)},120)}
+  var on=!!S.ach[a.id];if(on)cnt++;
+  var el=trB[a.id];el.className='tr'+(on?' on':'');el.textContent=on?a.n:'???';
+ });
+ document.getElementById('tc').textContent=cnt+'/'+AH.length;
+ var run=(S.total||0)-(S.base||0),gn=Math.floor(Math.sqrt(run/1e6));
+ pb.disabled=gn<1;
+ pb.querySelector('small').textContent=gn<1?'Bake 1M loaves in one run to earn your first starter':'Restart for +'+gn+' starter'+(gn>1?'s':'')+' (+10% to everything each)';
+}
+
+(function(){var t=S.t;if(t&&cps()>0){var s=Math.min((Date.now()-t)/1000,28800);if(s>60){var g=cps()*s*.5;S.loaves+=g;S.total=(S.total||0)+g;setTimeout(function(){toast('Welcome back! Your bakery made '+fmt(g)+' loaves while you were away.')},600)}}})();
+
+setInterval(function(){
+ heat=Math.max(0,heat-.1*(holding?8:(heat>60?22:16)));
+ if(holding){if(heat<=0)endHold();else{var hv=pc()*3;holdSum+=hv;S.loaves+=hv;S.total=(S.total||0)+hv;var hq=document.getElementById('loaf').getBoundingClientRect();burst(hq.left+hq.width/2,hq.top+hq.height/2);if(hb++%2===0)pop(hq.left+hq.width/2+(Math.random()*80-40),hq.top+hq.height/3,fmt(hv));beep(420+heat*3,.04,.025);render()}}
+ if(heat>=100)S.hot=1;
+ var fr=Date.now()<frenzyEnd,gl=heat/5+(fr?14:0)+(Date.now()<rushEnd?10:0)+(holding?18:0),cm=combo(),bm=bonus();
+ document.getElementById('loaf').style.filter=gl>1?'drop-shadow(0 0 '+gl+'px var(--accent))':'';
+ document.getElementById('cbar').style.width=heat+'%';
+ document.getElementById('ctext').textContent=holding?'Hold bonus: auto-baking x3!':(heat>=40?'Hold the loaf for a bonus!':(cm>1?'Combo x'+cm:'Tap fast to build a combo'));
+ document.getElementById('buff').textContent=buffText(fr,bm);
+ if(++tk%10===0)slow();
+},100);
+document.addEventListener('visibilitychange',function(){if(document.hidden)save()});
+
+var holding=false,hb=0,holdT=null,rushEnd=0;
+var LF=document.getElementById('loaf');
+LF.addEventListener('pointerdown',function(){clearTimeout(holdT);holdT=setTimeout(function(){if(heat>=40)startHold()},250)});
+['pointerup','pointercancel','pointerleave'].forEach(function(ev){LF.addEventListener(ev,function(){clearTimeout(holdT);endHold()})});
+LF.addEventListener('contextmenu',function(e){e.preventDefault()});
+
+function buffText(fr,bm){
+ var p=[];
+ if(fr)p.push('Golden frenzy x7 for '+Math.ceil((frenzyEnd-Date.now())/1000)+'s');
+ if(Date.now()<rushEnd)p.push('Doughnut rush x3 for '+Math.ceil((rushEnd-Date.now())/1000)+'s');
+ return p.length?p.join(' + '):(bm>1?'Bonus: +'+Math.round((bm-1)*100)+'% from starters and trophies':'');
+}
+function nextFD(first){setTimeout(spawnFD,(first?8:15+Math.random()*20)*1000)}
+function spawnFD(){
+ if(document.hidden){nextFD();return}
+ var d=document.createElement('button');d.className='fd';d.setAttribute('aria-label','Flying doughnut');
+ d.innerHTML='<svg viewBox="0 0 200 150" aria-hidden="true">'+SK[3].svg+'</svg>';
+ d.style.top=(12+Math.random()*60)+'vh';
+ if(Math.random()<.5)d.style.animationDirection='reverse';
+ var gone=setTimeout(function(){d.remove();nextFD()},6200);
+ d.onclick=function(){clearTimeout(gone);d.remove();doRush();nextFD()};
+ document.body.appendChild(d);
+}
+function doRush(){
+ S.dn=(S.dn||0)+1;rushEnd=Math.max(rushEnd,Date.now())+15000;
+ toast('Doughnut rush! Triple loaves for 15 seconds.');
+ [392,523,659,784].forEach(function(f,i){setTimeout(function(){beep(f,.15,.05)},i*70)});
+ render();
+}
+nextFD(true);
+
+var holdSum=0,holdT0=0;
+function startHold(){holding=true;holdSum=0;holdT0=Date.now();beep(500,.1,.04)}
+function endHold(){
+ if(!holding)return;
+ holding=false;
+ if((Date.now()-holdT0)/1000>=1.5&&holdSum>0){
+  var b=holdSum*.5;S.loaves+=b;S.total=(S.total||0)+b;
+  toast('Hold burst! +'+fmt(b)+' loaves');
+  [523,659,784,1047].forEach(function(f,i){setTimeout(function(){beep(f,.15,.05)},i*70)});
+  render();
+ }
+}
+function burst(x,y){
+ for(var i=0;i<2;i++){var c=document.createElement('i');c.className='cr';c.style.left=x+'px';c.style.top=y+'px';c.style.setProperty('--dx',(Math.random()*120-60)+'px');c.style.setProperty('--dy',(-30-Math.random()*70)+'px');fx.appendChild(c);(function(el){setTimeout(function(){el.remove()},600)})(c)}
+}
+
+var last=performance.now();
+setInterval(function(){
+  var now=performance.now(),dt=(now-last)/1000;last=now;
+  var c=cps();if(c>0){S.loaves+=c*dt;S.total=(S.total||0)+c*dt;render()}
+},100);
+setInterval(save,5000);
+window.addEventListener("pagehide",save);
+render();
+</script>
+</body>
+</html>
